@@ -380,7 +380,7 @@ const Home = () => {
         </div>
         <div className=" w-auto min-w-[550px] border border-[#6ca4a2] flex gap-2 p-2">
           <ToolGroup
-            items={[1,2,3,4,5] || []}
+            items={game?.playerItems || []}
             onClick={(type, indexList) =>
               handleToolClick("人类", type, indexList)
             }
