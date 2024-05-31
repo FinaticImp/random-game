@@ -2,7 +2,7 @@
     "rewrites": [
       {
         "source": "/api/:path*", 
-        "destination": "https://dashscope.aliyuncs.com/api/:path*"
+        "destination": "http://47.109.83.232:3037/api/:path*"
       }
     ]
   }
