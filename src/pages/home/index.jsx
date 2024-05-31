@@ -60,6 +60,7 @@ const Home = () => {
   useEffect(() => {
     console.log("effect: ", game);
     game?.setEventListener("onGameEvent", async (name, data) => {
+      // console.log('onGameEvent: ', name, data);
       if (name === "useTool" || name === "roundResult" || name === "resetWorld") {
         setUsingToolTip(data);
         setToolSelectedModalOpen(true);
@@ -96,22 +97,8 @@ const Home = () => {
 
   const formatData = (data) => {
     const { turn_begin, turn_item, ...reset } = data || {};
-    // const allTools = items?.map((item) => {
-    //   return {
-    //     type: item,
-    //     selectorId: 0,
-    //   };
-    // });
-    // const allWorlds = worlds?.map((item) => {
-    //   return {
-    //     type: item,
-    //     status: 0,
-    //   };
-    // });
     return {
       ...reset,
-      // allTools,
-      // allWorlds,
       turn_begin: generateDifferentDiceResults(turn_begin),
       turn_item: generateDifferentDiceResults(turn_item),
     };
@@ -199,32 +186,15 @@ const Home = () => {
         `本回合由: ${game?.leader} 先选择\n`,
         2000,
         () => {
-          game?.startRound?.();
           setStep(4);
+          if(game?.leader !== '人类') {
+            game?.startRound?.();
+          }
         },
       ]}
       cursor={true}
       style={typeTextStyle}
     />
-  );
-
-  const rollDiceTextWrapper = () => (
-    <>
-      <TypeAnimation
-        sequence={[
-          `Rolling the dice...\n
-          摇骰子结果：\n引路人: ${game?.turn_begin?.[0]}\n你: ${game?.turn_begin?.[1]}\n
-        所以，你赢了，可以先选择道具`,
-          1000,
-          () => {
-            game?.startRound?.();
-            setStep(4);
-          },
-        ]}
-        cursor={true}
-        style={typeTextStyle}
-      />
-    </>
   );
 
   const selectedPlayer = () => {
@@ -325,7 +295,7 @@ const Home = () => {
             // style={{ objectFit: "fill" }}
             src={`/assets/role/role1.png`}
           />
-            <div className="w-[200px] absolute right-[-210px] top-0 p-1 border border-gray-500 bg-black">
+            <div className="w-[220px] absolute right-[-230px] top-0 p-1 text-[14px] border border-gray-500 bg-black">
               {aiSpeak || "正在思考。。。"}
             </div>
           <CurrentPlayerRing show={game?.leader === "人工智能"} />
@@ -359,7 +329,6 @@ const Home = () => {
           {step === 0 && errorWrapper()}
           {step === 1 && firstLoadTextWrapper()}
           {step === 2 && nextActionTextWrapper()}
-          {step === 3 && rollDiceTextWrapper()}
           {step === 4 && selectedPlayer()}
           {step === 5 && winner()}
         </div>

@@ -90,7 +90,7 @@ class LifeAndDeathGame {
     this.playerDice = initData.turn_begin[1];
     this.aiDice = initData.turn_begin[0];
     this.leader = this.playerDice > this.aiDice ? "人类" : "人工智能";
-    // this.leader = "人类";
+    // this.leader = "人工智能";
     this.playerRandom = initData.player_random;
     this.aiRandom = initData.ai_random;
     this.distributeItems();
@@ -149,11 +149,13 @@ class LifeAndDeathGame {
     if (this.isGameOver()) {
       return;
     }
+    console.log('------------------startRound--------------');
+    
     if (this.worldsLeft === 0) {
       await this.resetWorldsAndItems();
       return;
     }
-    console.log(`---------------第${this.currentRound}回合---------------`);
+    console.log(`---------------第${this.currentRound}回合---------------`, new Date().toLocaleString());
     await this.showDecisionOptions();
   }
 
@@ -198,15 +200,16 @@ class LifeAndDeathGame {
     console.log(`累加后的AI道具: ${this.aiItems}`);
 
     console.log("游戏准备完毕，开始进行下一回合。");
-    await this.startRound();
+    // await this.startRound();
+    await this.showDecisionOptions()
   }
 
   async showDecisionOptions() {
-    await waitTime(5000);
     this.displayStatus();
     // const choice = await this.getInput("请选择(a/b/c-道具序号):");
-
+    
     if (this.leader === "人工智能") {
+      // await waitTime(3000);
       if (this.gameOver) return;
       const aiResult = await this.fetchGptOption(this.aiMsg);
       // 由于返回字段不确定 默认选择第一个字段
@@ -374,7 +377,7 @@ class LifeAndDeathGame {
     const isDangerous = world === "致命世界";
     const isAI = this.leader === "人工智能";
 
-    console.log(`---------------回合结果------------`);
+    console.log(`---------------回合结果------------`, new Date().toLocaleString());
     console.log(
       `${this.leader}选择了${
         choice === "a" ? "自己" : "对方"
@@ -382,14 +385,8 @@ class LifeAndDeathGame {
         this.currentRound + 1
       }回合。`
     );
-
-    const data = {
-      msg: `${this.leader}选择了${
-        choice === "a" ? "自己" : "对方"
-      }进入异世界，该异世界是${world}\n
-          ${isDangerous ? "受到伤害，减少生命值" : "没有受到伤害"}\n
-          现在让我们进行第${this.currentRound + 1}回合。`,
-    };
+    // 设置 当前leader
+    const _currentLeader = this.leader
 
     const updateLeader = (newLeader: string) => {
       if (this.useEMP) {
@@ -438,6 +435,15 @@ class LifeAndDeathGame {
       processSafeWorld();
     }
 
+    const roundDesc = (!this.aiHealth || !this.playerHealth) ? '回合结束' : `现在让我们进行第${this.currentRound + 1}回合`
+    const data = {
+      msg: `${_currentLeader}选择了${
+        choice === "a" ? "自己" : "对方"
+      }进入异世界，该异世界是${world}\n
+          ${isDangerous ? "受到伤害，减少生命值" : "没有受到伤害"}\n
+          ${roundDesc}`,
+    };
+
     this.danger = 1;
     this.useEye = false;
     this.currentRound++;
@@ -450,24 +456,14 @@ class LifeAndDeathGame {
 
   async fetchGptOption(prompt: string) {
     if (!prompt) return;
-    const url = `/api/v1/apps/${this.roleAppId}/completion`;
-    const token = "sk-9386888b42e54c42b8b38d26bc7d4c6d";
     const data = {
-      input: {
-        prompt,
-        session_id: this.sessionId || undefined,
-      },
-      parameters: {},
-      debug: {},
+      roleAppId: this.roleAppId,
+      prompt,
+      session_id: this.sessionId || undefined,
     };
 
     try {
-      const response = await axios.post(url, data, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post('/api/gptReply', data);
       const { session_id, text } = response?.data?.output || {};
       this.sessionId = session_id;
       const bracesContentRegex = /{([^{}]*)}/;
@@ -476,7 +472,7 @@ class LifeAndDeathGame {
       let parsedData = null;
       if (dataMatch) {
         try {
-          parsedData = JSON.parse(`{${dataMatch[1]}}`);
+          parsedData = JSON.parse(`{${dataMatch[1] || ''}}`);
         } catch (jsonError) {
           console.error("Error parsing JSON", jsonError);
         }

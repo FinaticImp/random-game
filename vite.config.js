@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/': {
-        target: 'https://dashscope.aliyuncs.com', // 目标服务器
+        target: 'http://47.109.83.232:3037', // 目标服务器
         changeOrigin: true,
       }
     },
