@@ -1,8 +1,9 @@
 import { useSuiClientQuery } from "@mysten/dapp-kit";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import "./index.less";
+import AudioPlay from "../../components/AudioPlay";
 import SelectedTools from "./components/SelectedTools";
 import { TypeAnimation } from "react-type-animation";
 import HealthBar from "./components/HealthBar";
@@ -44,24 +45,21 @@ const Home = () => {
 
   useEffect(() => {
     const gameId = localStorage.getItem("gameId");
-    const role = JSON.parse(localStorage.getItem("role") || '{}');
+    const role = JSON.parse(localStorage.getItem("role") || "{}");
     console.log(role);
     setGameId(gameId);
-    setCurrentRole(role)
-    // const timer = setInterval(() => {
-    //   forceUpdate((x) => x + 1);
-    // }, 2000);
-
-    // return () => {
-    //   clearInterval(timer);
-    // };
+    setCurrentRole(role);
   }, []);
 
   useEffect(() => {
     console.log("effect: ", game);
     game?.setEventListener("onGameEvent", async (name, data) => {
       // console.log('onGameEvent: ', name, data);
-      if (name === "useTool" || name === "roundResult" || name === "resetWorld") {
+      if (
+        name === "useTool" ||
+        name === "roundResult" ||
+        name === "resetWorld"
+      ) {
         setUsingToolTip(data);
         setToolSelectedModalOpen(true);
       } else if (name === "aiSpeek") {
@@ -106,14 +104,14 @@ const Home = () => {
   const initData = async (data) => {
     if (!data) {
       setStep(0);
-      return
+      return;
     }
-    setStep(1)
+    setStep(1);
     setTimeout(() => {
       const fields = getCounterFields(data?.data);
       const _gameData = formatData(fields);
       const game = new GameLife();
-      _gameData.roleAppId = currentRole?.app_id
+      _gameData.roleAppId = currentRole?.app_id;
       game?.prepareGame(_gameData);
       console.log("inti game: ", game);
       setGame(game);
@@ -187,7 +185,7 @@ const Home = () => {
         2000,
         () => {
           setStep(4);
-          if(game?.leader !== '人类') {
+          if (game?.leader !== "人类") {
             game?.startRound?.();
           }
         },
@@ -288,16 +286,16 @@ const Home = () => {
         </div>
         <div className="border border-red-500 ml-4 relative">
           <div className="w-full absolute left-0 top-0 bg-slate-600 opacity-80 text-center">
-            {currentRole?.name || '默认'}
+            {currentRole?.name || "默认"}
           </div>
           <img
             width={120}
             // style={{ objectFit: "fill" }}
             src={`/assets/role/role1.png`}
           />
-            <div className="w-[220px] absolute right-[-230px] top-0 p-1 text-[14px] border border-gray-500 bg-black">
-              {aiSpeak || "正在思考。。。"}
-            </div>
+          <div className="w-[220px] absolute right-[-230px] top-0 p-1 text-[14px] border border-gray-500 bg-black">
+            {aiSpeak || "正在思考。。。"}
+          </div>
           <CurrentPlayerRing show={game?.leader === "人工智能"} />
           <div className="w-full absolute left-0 bottom-0 bg-slate-600 opacity-80">
             <HealthBar health={game?.aiHealth} role="ai" />
@@ -362,12 +360,16 @@ const Home = () => {
         values={usingToolTip}
         onCancel={() => setToolSelectedModalOpen(false)}
       />
-      {
-        game?.playerHealth <= 2
-        ? <audio src="/assets/music/rush1.mp3" autoPlay loop />
-        : <audio src="/assets/music/begin2-4.mp3" autoPlay loop />
-      }
-      
+
+      <div className="absolute top-3 right-3">
+        <AudioPlay
+          src={
+            game?.playerHealth <= 2
+              ? "/assets/music/rush1.mp3"
+              : "/assets/music/begin2-4.mp3"
+          }
+        />
+      </div>
     </div>
   );
 };

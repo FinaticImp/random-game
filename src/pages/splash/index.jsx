@@ -5,10 +5,11 @@ import {
   useSignAndExecuteTransactionBlock,
   useSuiClient,
 } from "@mysten/dapp-kit";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { TypeAnimation } from "react-type-animation";
 import { DEVNET_COUNTER_PACKAGE_ID, ROLES } from "../../config/constants";
+import AudioPlay from "../../components/AudioPlay";
 
 import { useNavigate } from "react-router-dom";
 import "./index.less";
@@ -26,16 +27,17 @@ const Splash = () => {
   const [showLoading, setShowLoading] = useState(false);
   const navigate = useNavigate();
   const client = useSuiClient();
+
   let counterPackageId = DEVNET_COUNTER_PACKAGE_ID;
 
   const { mutate: signAndExecute } = useSignAndExecuteTransactionBlock();
 
   useEffect(() => {
     // 随机生成角色
-    const randomIndex = Math.floor(Math.random() * 6) + 1
-    const role = ROLES[randomIndex - 1]
-    localStorage.setItem('role', JSON.stringify(role))
-  }, [])
+    const randomIndex = Math.floor(Math.random() * 6) + 1;
+    const role = ROLES[randomIndex - 1];
+    localStorage.setItem("role", JSON.stringify(role));
+  }, []);
 
   function StartGameBtnWrapper() {
     const account = useCurrentAccount();
@@ -47,7 +49,7 @@ const Splash = () => {
     return (
       <div>
         <div
-          className="startGameBtn w-[280px] m-auto p-2 border border-white text-center"
+          className="startGameBtn w-[280px] m-auto p-2 border border-white text-center cursor-pointer"
           onClick={handleInitGame}
         >
           开始游戏
@@ -109,22 +111,22 @@ const Splash = () => {
   return (
     <div className="startPage w-full h-screen py-6">
       {/* <div className="absolute top-[20px] m-auto"> */}
-      <img src='/assets/title.png' className="w-[300px] m-auto mb-10" />
+      <img src="/assets/title.png" className="w-[300px] m-auto mb-10" />
       {/* <div className="description">
         这种方法确保了在用户交互后音频才会播放，符合现代浏览器的自动播放策略。您可以根据需要添加更多的控制，例如暂停、停止、调整音量等。
         这种方法确保了在用户交互后音频才会播放，符合现代浏览器的自动播放策略。您可以根据需要添加更多的控制，例如暂停、停止、调整音量等。
       </div> */}
       {/* <img src="/assets/start-border.png" className="w-[60%] m-auto mb-10" /> */}
       <div className="w-[300px] m-auto ">
-
-      <div className=" pb-4 flex justify-center align-middle">
-        <p className=" pt-3 text-lg">玩家：</p>
-        <ConnectButton connectText="连接 Sui钱包" />
+        <div className=" pb-4 flex justify-center align-middle">
+          <p className=" pt-3 text-lg">玩家：</p>
+          <ConnectButton connectText="连接 Sui钱包" />
+        </div>
+        <StartGameBtnWrapper />
       </div>
-      <StartGameBtnWrapper />
+      <div className="absolute top-3 right-3">
+        <AudioPlay src="/assets/music/rush1.mp3"/>
       </div>
-
-      <audio src="/assets/music/into.mp3" autoPlay loop />
     </div>
   );
 };

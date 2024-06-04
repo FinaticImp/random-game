@@ -32,6 +32,7 @@ class LifeAndDeathGame {
   danger: number;
   useEMP: boolean;
   useEye: boolean;
+  lastUseItem: string;
   playerRandom: number;
   aiRandom: number;
   gameOver: boolean;
@@ -58,6 +59,7 @@ class LifeAndDeathGame {
     this.danger = 1;
     this.useEMP = false;
     this.useEye = false;
+    this.lastUseItem = ''
     this.playerRandom = 0;
     this.aiRandom = 0;
     this.gameOver = false;
@@ -78,7 +80,7 @@ class LifeAndDeathGame {
     this.roleAppId = initData?.roleAppId;
     this.maxHealth = initData.hp;
     this.playerHealth = this.aiHealth = initData.hp;
-    this.worlds = initData.worlds.map((world) =>
+    this.worlds = initData.worlds?.map((world) =>
       world === 1 ? "致命世界" : "安全世界"
     );
     this.worldsLeft = this.worlds.length;
@@ -87,6 +89,7 @@ class LifeAndDeathGame {
     ).length;
     this.safeWorlds = this.worlds.length - this.dangerousWorlds;
     this.items = initData.items;
+    // this.items = [1, 2, 3, 4, 1, 2, 3, 4];
     this.playerDice = initData.turn_begin[1];
     this.aiDice = initData.turn_begin[0];
     this.leader = this.playerDice > this.aiDice ? "人类" : "人工智能";
@@ -179,8 +182,11 @@ class LifeAndDeathGame {
     const data = {
       msg: `本轮世界已耗尽，重新生成世界和道具`,
     };
+    // 延时触发重置提醒
     // 触发事件
-    this.listeners?.onGameEvent("resetWorld", data);
+    setTimeout(() => {
+      this.listeners?.onGameEvent("resetWorld", data);
+    }, 2000);
 
     this.worlds = this.generateWorlds().map((world) =>
       world === 1 ? "致命世界" : "安全世界"
@@ -241,6 +247,7 @@ class LifeAndDeathGame {
         人工智能的剩余道具列表：${this.aiItems};\n
         致命世界数量：${this.dangerousWorlds};\n
         安全世界数量：${this.safeWorlds};\n
+        ${this.lastUseItem};\n
         --------------${this.leader}--选择-----------------\n
         a.选择自己进入异世界;\n
         b.选择对方进入异世界;\n
@@ -264,6 +271,7 @@ class LifeAndDeathGame {
   }
 
   async makeDecision(choice: string) {
+
     if (choice.startsWith("c-")) {
       const itemIndex = parseInt(choice.split("-")[1]) - 1;
       await this.useItem(itemIndex);
@@ -308,11 +316,19 @@ class LifeAndDeathGame {
         console.log(`异世界造成2点伤害`);
         itemList.splice(itemIndex, 1);
         resultDesc = `异世界造成2点伤害`;
+        if(this.leader === "人工智能") {
+          this.lastUseItem = `本回合已经使用钢铁洪流`
+        }
         break;
       case 4:
         this.removeCurrentWorld();
         itemList.splice(itemIndex, 1);
         resultDesc = `移除了当前世界`;
+        // 移除掉最后一个世界，重新更新世界
+        if (this.worldsLeft === 0) {
+          await this.resetWorldsAndItems();
+          return;
+        }
         break;
       case 5:
         if (this.useEye) {
@@ -323,6 +339,9 @@ class LifeAndDeathGame {
           itemList.splice(itemIndex, 1);
           console.log(`当前异世界是${this.worlds[0]}`);
           resultDesc = `当前异世界是${this.worlds[0]}`;
+          if(this.leader === "人工智能") {
+            this.lastUseItem = `本回合已经使用阴阳眼, 当前异世界是${this.worlds[0]}`
+          }
         }
         break;
       default:
@@ -373,6 +392,8 @@ class LifeAndDeathGame {
   async enterWorld(choice: string) {
     const world = this.worlds.shift()!;
     this.worldsLeft--;
+    // 设置 当前leader
+    const _currentLeader = this.leader + ''
 
     const isDangerous = world === "致命世界";
     const isAI = this.leader === "人工智能";
@@ -385,8 +406,10 @@ class LifeAndDeathGame {
         this.currentRound + 1
       }回合。`
     );
-    // 设置 当前leader
-    const _currentLeader = this.leader
+
+    if (isAI) {
+      this.lastUseItem = ''
+    }
 
     const updateLeader = (newLeader: string) => {
       if (this.useEMP) {
@@ -456,6 +479,7 @@ class LifeAndDeathGame {
 
   async fetchGptOption(prompt: string) {
     if (!prompt) return;
+
     const data = {
       roleAppId: this.roleAppId,
       prompt,
