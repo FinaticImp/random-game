@@ -1,6 +1,6 @@
 import { getFullnodeUrl } from "@mysten/sui.js/client";
 import {
-  DEVNET_COUNTER_PACKAGE_ID,
+  PACKAGE_ID,
   MAINNET_COUNTER_PACKAGE_ID,
 } from "./config/constants";
 import { createNetworkConfig } from "@mysten/dapp-kit";
@@ -10,7 +10,7 @@ const { networkConfig, useNetworkVariable, useNetworkVariables } =
     devnet: {
       url: getFullnodeUrl("devnet"),
       variables: {
-        counterPackageId: DEVNET_COUNTER_PACKAGE_ID,
+        counterPackageId: PACKAGE_ID,
       },
     },
     mainnet: {

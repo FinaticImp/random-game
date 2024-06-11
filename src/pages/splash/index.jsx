@@ -8,7 +8,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { TypeAnimation } from "react-type-animation";
-import { DEVNET_COUNTER_PACKAGE_ID, ROLES } from "../../config/constants";
+import { PACKAGE_ID, ROLES } from "../../config/constants";
 import AudioPlay from "../../components/AudioPlay";
 
 import { useNavigate } from "react-router-dom";
@@ -28,7 +28,7 @@ const Splash = () => {
   const navigate = useNavigate();
   const client = useSuiClient();
 
-  let counterPackageId = DEVNET_COUNTER_PACKAGE_ID;
+  let counterPackageId = PACKAGE_ID;
 
   const { mutate: signAndExecute } = useSignAndExecuteTransactionBlock();
 

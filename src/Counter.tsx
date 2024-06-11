@@ -8,13 +8,13 @@ import type { SuiObjectData } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { Button, Flex, Heading, Text } from "@radix-ui/themes";
 import React from "react";
-import { DEVNET_COUNTER_PACKAGE_ID } from "./config/constants";
+import { PACKAGE_ID } from "./config/constants";
 import { useNetworkVariable } from "./networkConfig";
 
 export function Counter({ id }: { id: string }) {
   const client = useSuiClient();
   const currentAccount = useCurrentAccount();
-  const counterPackageId = DEVNET_COUNTER_PACKAGE_ID;
+  const counterPackageId = PACKAGE_ID;
   const { mutate: signAndExecute } = useSignAndExecuteTransactionBlock();
   const { data, isPending, error, refetch } = useSuiClientQuery("getObject", {
     id,
